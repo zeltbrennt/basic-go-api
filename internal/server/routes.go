@@ -5,6 +5,7 @@ import (
 
 	httpSwagger "github.com/swaggo/http-swagger"
 	_ "github.com/zeltbrennt/go-api/docs"
+	"github.com/zeltbrennt/go-api/internal/middleware"
 )
 
 func (ts *TaskService) Routes() http.Handler {
@@ -20,5 +21,5 @@ func handleAPIv1(ts *TaskService) http.Handler {
 	api := http.NewServeMux()
 	api.HandleFunc("GET /tasks", ts.getAllTasksHandler)
 	api.HandleFunc("POST /tasks", ts.createTaskHandler)
-	return http.StripPrefix("/api/v1", api)
+	return middleware.LoggingMiddleware(ts.logger)(http.StripPrefix("/api/v1", api))
 }

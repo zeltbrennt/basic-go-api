@@ -1,6 +1,7 @@
 package server_test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -16,7 +17,7 @@ import (
 var mockStore = store.NewMockStore()
 
 func newTestServer() http.Handler {
-	server := server.NewTaskService(mockStore)
+	server := server.NewTaskService(mockStore, nil)
 	return server.Routes()
 }
 
@@ -35,7 +36,7 @@ func TestGetAllTasks(t *testing.T) {
 			ID:    i,
 			Title: fmt.Sprintf("Task #%d", i),
 		}
-		_, err := mockStore.CreateTask(task)
+		_, err := mockStore.CreateTask(task, context.Background()) // TODO
 		if err != nil {
 			t.Fatal("error while creating task")
 		}
