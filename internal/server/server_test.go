@@ -16,7 +16,7 @@ import (
 var mockStore = store.NewMockStore()
 
 func newTestServer() http.Handler {
-	server := server.NewTaskServer(mockStore)
+	server := server.NewTaskService(mockStore)
 	return server.Routes()
 }
 

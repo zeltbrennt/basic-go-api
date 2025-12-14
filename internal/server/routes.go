@@ -7,7 +7,7 @@ import (
 	_ "github.com/zeltbrennt/go-api/docs"
 )
 
-func (ts *TaskServer) Routes() http.Handler {
+func (ts *TaskService) Routes() http.Handler {
 	rootMux := http.NewServeMux()
 	rootMux.Handle("/api/v1/", handleAPIv1(ts))
 	rootMux.Handle("/swagger/", httpSwagger.Handler(
@@ -16,7 +16,7 @@ func (ts *TaskServer) Routes() http.Handler {
 }
 
 // Routes to /api/v1
-func handleAPIv1(ts *TaskServer) http.Handler {
+func handleAPIv1(ts *TaskService) http.Handler {
 	api := http.NewServeMux()
 	api.HandleFunc("GET /tasks", ts.getAllTasksHandler)
 	api.HandleFunc("POST /tasks", ts.createTaskHandler)

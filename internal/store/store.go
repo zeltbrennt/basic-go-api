@@ -3,9 +3,13 @@
 // Describes the interface the storage needs to fullfill
 package store
 
-import "github.com/zeltbrennt/go-api/internal/models"
+import (
+	"context"
 
-type Store interface {
-	GetAllTasks() ([]models.Task, error)
-	CreateTask(task models.Task) (models.Task, error)
+	"github.com/zeltbrennt/go-api/internal/models"
+)
+
+type Storer interface {
+	GetAllTasks(ctx context.Context) ([]models.Task, error)
+	CreateTask(ctx context.Context, task models.Task) (models.Task, error)
 }

@@ -3,14 +3,20 @@
 // Describes the server with its routes and handers
 package server
 
-import "github.com/zeltbrennt/go-api/internal/store"
+import (
+	"log/slog"
 
-type TaskServer struct {
-	store store.Store
+	"github.com/zeltbrennt/go-api/internal/store"
+)
+
+type TaskService struct {
+	store  store.Storer
+	logger *slog.Logger
 }
 
-func NewTaskServer(s store.Store) *TaskServer {
-	return &TaskServer{
-		store: s,
+func NewTaskService(store store.Storer, logger *slog.Logger) *TaskService {
+	return &TaskService{
+		store:  store,
+		logger: logger,
 	}
 }
