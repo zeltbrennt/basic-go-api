@@ -1,8 +1,12 @@
 {
     "swagger": "2.0",
     "info": {
+        "description": "Task Server API",
+        "title": "Task server",
         "contact": {}
     },
+    "host": "localhost:8090",
+    "basePath": "/api/v1",
     "paths": {
         "/tasks": {
             "get": {

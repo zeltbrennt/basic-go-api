@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/zeltbrennt/go-api/internal/server"
 	"github.com/zeltbrennt/go-api/internal/store"
@@ -11,6 +12,13 @@ import (
 
 const port = 8090
 
+// TaskServer godoc
+//
+//	@titlte Task server
+//	@verison 1
+//	@description Task Server API
+//	@basePath /api/v1
+//	@host localhost:8090
 func main() {
 	store := store.NewMockStore()
 	// store, err := store.NewMongoStore("mongodb://root:example@mongodb:27017", "myDB", "myCollection")
@@ -19,9 +27,13 @@ func main() {
 	//	log.Fatal("failed to get database connection")
 	//}
 	server := server.NewTaskServer(store)
-	log.Println("Server startet and listening on port", port)
-	err := http.ListenAndServe(fmt.Sprintf("localhost: %d", port), server.Routes())
+	logHandler := slog.NewJSONHandler(os.Stderr, nil) // change this to a fileWriter to keep the logs
+	logger := slog.New(logHandler)
+
+	logger.Info(fmt.Sprintf("Server startet and listening on port %d", port))
+	err := http.ListenAndServe(fmt.Sprintf("localhost:%d", port), server.Routes())
 	if err != nil {
-		log.Fatal("server crashed...")
+		logger.Error(err.Error())
+		os.Exit(1)
 	}
 }

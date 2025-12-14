@@ -1,3 +1,4 @@
+basePath: /api/v1
 definitions:
   models.Task:
     properties:
@@ -8,8 +9,11 @@ definitions:
     required:
     - title
     type: object
+host: localhost:8090
 info:
   contact: {}
+  description: Task Server API
+  title: Task server
 paths:
   /tasks:
     get:

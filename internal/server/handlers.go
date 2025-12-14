@@ -12,13 +12,14 @@ import (
 var validate = validator.New()
 
 // GetAllTasks godoc
-// @Summary Gets all tasks
-// @Description Gets all tasks
-// @Tags tasks
-// @Produce json
-// @Success 200 {array} models.Task
-// @Failure 500
-// @Router /tasks [get]
+//
+//	@Summary		Gets all tasks
+//	@Description	Gets all tasks
+//	@Tags			tasks
+//	@Produce		json
+//	@Success		200	{array}	models.Task
+//	@Failure		500
+//	@Router			/tasks [get]
 func (ts *TaskServer) getAllTasksHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("get all tasks %s\n", r.URL.Path)
 	tasks, _ := ts.store.GetAllTasks()
@@ -31,15 +32,16 @@ func (ts *TaskServer) getAllTasksHandler(w http.ResponseWriter, r *http.Request)
 }
 
 // CreateTask godoc
-// @Summary Create a new Task
-// @Description Create a task and returns it
-// @Tags tasks
-// @Accept json
-// @Produce json
-// @Param task body models.Task true "Some Task"
-// @Success 201 {object} models.Task
-// @Failure 400
-// @Router /tasks [post]
+//
+//	@Summary		Create a new Task
+//	@Description	Create a task and returns it
+//	@Tags			tasks
+//	@Accept			json
+//	@Produce		json
+//	@Param			task	body		models.Task	true	"Some Task"
+//	@Success		201		{object}	models.Task
+//	@Failure		400
+//	@Router			/tasks [post]
 func (ts *TaskServer) createTaskHandler(w http.ResponseWriter, r *http.Request) {
 	var t models.Task
 	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
