@@ -8,6 +8,8 @@
 - Mocking database
 - API-Tests
 - Input Validation
+- Structured Logging Middleware
+- Gracefully Shutdown and context canceling
 
 ## Dependencies
 
@@ -35,6 +37,7 @@ cmd/
     main.go => entry point of the app
 docs/ => api-documentation, automatically generated
 internal/
+  middleware/ => here are all middleware functions like logging
   models/ => description of all structs
   server/
     server.go => server setup
