@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -14,7 +15,13 @@ import (
 	"github.com/zeltbrennt/go-api/internal/store"
 )
 
-const port = 8090
+type ServerConfig struct {
+	store           store.Storer
+	logger          *slog.Logger
+	host            string
+	port            int
+	shutdownTimeout time.Duration
+}
 
 // TaskServer godoc
 //
@@ -25,48 +32,64 @@ const port = 8090
 //	@host localhost:8090
 func main() {
 	ctx := context.Background()
-	if err := run(ctx, os.Stdout); err != nil {
-		fmt.Fprintf(os.Stderr, "%s\b", err)
+
+	config := ServerConfig{
+		host:            "localhost",
+		port:            8090,
+		shutdownTimeout: 5 * time.Second,
+	}
+
+	if err := setupAndRun(ctx, config, os.Stdout); err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(1)
 	}
 }
 
-func run(ctx context.Context, w io.Writer) error {
+func createServer(config ServerConfig) *http.Server {
+	taskService := server.NewTaskService(config.store, config.logger)
+	return &http.Server{
+		Addr:    fmt.Sprintf("%s:%d", config.host, config.port),
+		Handler: taskService.Routes(),
+	}
+}
+
+func setupAndRun(ctx context.Context, config ServerConfig, w io.Writer) error {
 	// interrupt
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
 
 	store := store.NewMockStore()
-
+	config.store = store
 	logHandler := slog.NewJSONHandler(w, nil) // change this to a fileWriter to keep the logs
 	logger := slog.New(logHandler)
-	logger.Info(fmt.Sprintf("Server startet and listening on port %d", port))
+	config.logger = logger
 
-	taskServer := server.NewTaskService(store, logger)
-	srv := &http.Server{
-		Addr:    fmt.Sprintf("localhost:%d", port),
-		Handler: taskServer.Routes(),
-	}
+	srv := createServer(config)
 	// run server in goroutine
 	srvErr := make(chan error, 1)
 	go func() {
-		srvErr <- srv.ListenAndServe()
+		if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+			srvErr <- err
+		}
+		close(srvErr)
 	}()
+	logger.Info(fmt.Sprintf("Server started on %s", srv.Addr))
 	// warten auf stop signal oder server fehler
+
 	select {
 	case <-ctx.Done():
-		logger.Info("shutting down server...")
+		logger.Info("shutdown signal received")
 	case err := <-srvErr:
-		if err != nil && err != http.ErrServerClosed {
-			return fmt.Errorf("server error: %w", err)
-		}
+		return fmt.Errorf("server error: %w", err)
 	}
 
-	shutdownCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(ctx, config.shutdownTimeout)
 	defer cancel()
 
 	if err := srv.Shutdown(shutdownCtx); err != nil {
-		return fmt.Errorf("server Shutdown failed %w", err)
+		if closErr := srv.Close(); closErr != nil {
+			return errors.Join(err, closErr)
+		}
 	}
 
 	logger.Info("server gracefully stopped")
